@@ -1,6 +1,6 @@
 import pygame
 import random
-from pathfinding.finder.a_star import AStarFinder
+import networkx as nx
 
 # Constants
 WIDTH = 800  # Width of the grid
@@ -69,7 +69,21 @@ def is_collision(rover, obstacles):
 
 def main():
     rover = Rover(0, 0)
-    obstacles = generate_obstacles(50)
+    obstacles = generate_obstacles(100)  # Increase the number of obstacles here
+
+    # Create the grid graph using networkx
+    graph = nx.grid_2d_graph(NUM_COLS, NUM_ROWS)
+
+    # Remove nodes corresponding to obstacles
+    for obstacle in obstacles:
+        node = (obstacle.x, obstacle.y)
+        if graph.has_node(node):
+            graph.remove_node(node)
+
+    # Run A* algorithm to find the path to the goal
+    start = (rover.x, rover.y)
+    goal = (NUM_COLS - 1, NUM_ROWS - 1)
+    path = nx.astar_path(graph, start, goal)
 
     while True:
         for event in pygame.event.get():
@@ -77,30 +91,25 @@ def main():
                 pygame.quit()
                 return
 
-        keys = pygame.key.get_pressed()
-        dx, dy = 0, 0
-        if keys[pygame.K_LEFT]:
-            dx = -1
-        elif keys[pygame.K_RIGHT]:
-            dx = 1
-        elif keys[pygame.K_UP]:
-            dy = -1
-        elif keys[pygame.K_DOWN]:
-            dy = 1
-
-        new_x = rover.x + dx
-        new_y = rover.y + dy
-        if 0 <= new_x < NUM_COLS and 0 <= new_y < NUM_ROWS and not is_collision(Rover(new_x, new_y), obstacles):
-            rover.move(dx, dy)
+        if len(path) > 1:
+            next_node = path[1]
+            dx = next_node[0] - rover.x
+            dy = next_node[1] - rover.y
+            if not is_collision(Rover(rover.x + dx, rover.y + dy), obstacles):
+                rover.move(dx, dy)
+                path.pop(0)  # Move to the next node in the path
 
         screen.fill(WHITE)
         draw_grid()
         for obstacle in obstacles:
             obstacle.draw()
+        for node_x, node_y in path:
+            pygame.draw.rect(screen, GREEN, (node_x * GRID_SIZE, node_y * GRID_SIZE, GRID_SIZE, GRID_SIZE))
         rover.draw()
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(2)  # Adjust the speed of the movement here
 
 
 if __name__ == '__main__':
     main()
+
