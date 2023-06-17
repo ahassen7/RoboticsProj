@@ -26,11 +26,13 @@ class Rover:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
+        
+# Move the rover by the specified amount
     def move(self, dx, dy):
         self.x += dx
         self.y += dy
 
+# Draw the rover on the screen
     def draw(self):
         pygame.draw.rect(screen, BLUE, (self.x * GRID_SIZE, self.y * GRID_SIZE, GRID_SIZE, GRID_SIZE))
 
@@ -43,7 +45,7 @@ class Obstacle:
     def draw(self):
         pygame.draw.rect(screen, RED, (self.x * GRID_SIZE, self.y * GRID_SIZE, GRID_SIZE, GRID_SIZE))
 
-
+# Draw grid lines on the screen
 def draw_grid():
     for x in range(0, WIDTH, GRID_SIZE):
         pygame.draw.line(screen, BLACK, (x, 0), (x, HEIGHT))
@@ -51,6 +53,7 @@ def draw_grid():
         pygame.draw.line(screen, BLACK, (0, y), (WIDTH, y))
 
 
+# Generate Random Obstacles
 def generate_obstacles(num_obstacles):
     obstacles = []
     for _ in range(num_obstacles):
